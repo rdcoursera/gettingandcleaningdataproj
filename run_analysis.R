@@ -1,6 +1,7 @@
 # ###########
 # Get the data - This script will get the zip file from the url, download it to the OS temp dir.
 # The script reads each file needed directly from the zip file without expanding the zip.
+# When the file unlinked the temp file is deleted
 # This allow running the script without making any assumption of the data location
 # ##########
 temp <- tempfile()

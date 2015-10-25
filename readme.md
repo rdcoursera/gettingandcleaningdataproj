@@ -1,5 +1,5 @@
-Overview
-========
+Instruction to run script
+=========================
 
 This repo contains the r script and supporting files for the Getting and
 Cleaning Data project. The r script to reproduce the output file
@@ -7,3 +7,142 @@ Cleaning Data project. The r script to reproduce the output file
 required zip file from the given url to the OS temp directory, load all
 the necessary files from the zip repo and then delete the zip file. This
 makes the script entirely self contained.
+
+Overview
+========
+
+This repo contains the r script necessary to implement the steps given
+in the Getting and Cleaning Data project class assignment. The
+assignment includes an overview and specific steps.
+
+Assignment
+==========
+
+> The purpose of this project is to demonstrate your ability to collect,
+> work with, and clean a data set. The goal is to prepare tidy data that
+> can be used for later analysis. You will be graded by your peers on a
+> series of yes/no questions related to the project. You will be
+> required to submit: 1) a tidy data set as described below, 2) a link
+> to a Github repository with your script for performing the analysis,
+> and 3) a code book that describes the variables, the data, and any
+> transformations or work that you performed to clean up the data called
+> CodeBook.md. You should also include a README.md in the repo with your
+> scripts. This repo explains how all of the scripts work and how they
+> are connected.
+
+> One of the most exciting areas in all of data science right now is
+> wearable computing - see for example this article . Companies like
+> Fitbit, Nike, and Jawbone Up are racing to develop the most advanced
+> algorithms to attract new users. The data linked to from the course
+> website represent data collected from the accelerometers from the
+> Samsung Galaxy S smartphone. A full description is available at the
+> site where the data was obtained:
+
+> <http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones>
+
+> Here are the data for the project:
+
+> <https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip>
+
+> You should create one R script called run\_analysis.R that does the
+> following.
+
+> 1.  Merges the training and the test sets to create one data set.
+> 2.  Extracts only the measurements on the mean and standard deviation
+>     for each measurement.
+> 3.  Uses descriptive activity names to name the activities in the data
+>     set
+> 4.  Appropriately labels the data set with descriptive variable names.
+> 5.  From the data set in step 4, creates a second, independent tidy
+>     data set with the average of each variable for each activity and
+>     each subject.
+
+Process
+=======
+
+The r script (run\_analysis.R) implements the 5 steps given above.
+
+1.  Get the data file and read the data - the files used from the
+    original zip file for this project are:
+
+        test/subject_test.txt
+        test/X_test.txt
+        test/y_test.txt
+        train/subject_train.txt
+        train/X_train.txt
+        train/y_train.txt
+        features.txt
+
+        temp <- tempfile()
+        download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",temp)
+        # get data files
+        xtest <- read.table(unz(temp,"UCI HAR Dataset/test/X_test.txt"))
+        xtrain <- read.table(unz(temp,"UCI HAR Dataset/train/X_train.txt"))
+        # get feature names
+        features <- read.table(unz(temp,"UCI HAR Dataset/features.txt"))
+        ytest <- read.table(unz(temp,"UCI HAR Dataset/test/y_test.txt"))
+        ytrain <- read.table(unz(temp,"UCI HAR Dataset/train/y_train.txt"))
+        subject_train <- read.table(unz(temp,"UCI HAR Dataset/train/subject_train.txt"))
+        subject_test <- read.table(unz(temp,"UCI HAR Dataset/test/subject_test.txt"))
+        activitylabels <- read.table(unz(temp,"UCI HAR Dataset/activity_labels.txt"))
+        unlink(temp)
+
+2.  Merges the training and the test sets to create one data set.
+
+        xtesttrain <- rbind(xtest,xtrain) # merge raw data sets
+        colnames(xtesttrain) <- features[,2] # set col names of raw data
+        # get activity labels
+        ytesttrain <- rbind(ytest,ytrain) # merge activity labels
+        xtesttrain <- cbind(ytesttrain[,1],xtesttrain) # add label col to start of raw data 
+        xsubjects <- rbind(subject_test,subject_train) # merge subjects
+
+3.  Extracts only the measurements on the mean and standard deviation
+    for each measurement.
+
+        xmeancols <- xtesttrain[,grepl("mean",names(xtesttrain))] # find col names with "mean"
+        xmeancols <- subset(xmeancols, select = -(grep("meanFreq",names(xmeancols)))) # remove meanFreq cols since they aren't weighted averages
+        xstdcols <- xtesttrain[,grepl("std",names(xtesttrain))] # find col names with "std"
+        xmeanstd <- cbind(xmeancols,xstdcols) # combine mean and std
+        xmeanstd <- cbind(ytesttrain[,1],xmeanstd) # add column of activity numbers
+        xmeanstd <- cbind(xsubjects[,1],xmeanstd) # add column of test subject numbers
+
+4.  Uses descriptive activity names to name the activities in the data
+    set
+
+        colnames(xmeanstd)[1] <- "Subject"
+        colnames(xmeanstd)[2] <- "Activities"
+        # get activity labels
+        activitylabels <- activitylabels$V2 #extract activities column
+        # set activity labels 
+        xmeanstd <- within(xmeanstd, Activities <- levels(activitylabels)[Activities])
+
+5.  Appropriately labels the data set with descriptive variable names.
+
+        #standardize names for tidy data set
+        names(xmeanstd)<-gsub("^t", "time", names(xmeanstd))
+        names(xmeanstd)<-gsub("^f", "frequency", names(xmeanstd))
+        names(xmeanstd)<-gsub("Acc", "Accelerometer", names(xmeanstd))
+        names(xmeanstd)<-gsub("Gyro", "Gyroscope", names(xmeanstd))
+        names(xmeanstd)<-gsub("Mag", "Magnitude", names(xmeanstd))
+        names(xmeanstd)<-gsub("BodyBody", "Body", names(xmeanstd))
+        names(xmeanstd)<-gsub("mean", "Mean", names(xmeanstd))
+        names(xmeanstd)<-gsub("std", "Std", names(xmeanstd))
+        names(xmeanstd)<-gsub("-", "", names(xmeanstd))
+        names(xmeanstd)<-gsub("\\(", "", names(xmeanstd))
+        names(xmeanstd)<-gsub("\\)", "", names(xmeanstd))
+        xmeanstd <- within(xmeanstd, Activities <- levels(activitylabels)[Activities])
+
+6.  From the data set in step 4, creates a second, independent tidy data
+    set with the average of each variable for each activity and each
+    subject.
+
+        tidydataset <- aggregate(xmeanstd[,-(1:2)], by = list(Activies = xmeanstd$Activities,
+                                                          Subject =xmeanstd$Subject), FUN = "mean")
+        ####
+        #### Write the output text file
+        write.table(tidydataset,"tidydataset.txt",row.name=FALSE)
+
+Output
+======
+
+The output is a text file of the final tidy data set (tidydata.txt)
