@@ -1,3 +1,10 @@
+Intro
+=====
+
+This readme was created in rstudio as an *.rmd file with the heading yml
+ouput: set to md\_document. This allowed the use of editing and preview
+features of rstudio and to output *.md.
+
 Instruction to run script
 =========================
 
@@ -62,33 +69,42 @@ Process
 
 The r script (run\_analysis.R) implements the 5 steps given above.
 
-1.  Get the data file and read the data - the files used from the
-    original zip file for this project are:
+-   Get the data file and read the data
 
-        test/subject_test.txt
-        test/X_test.txt
-        test/y_test.txt
-        train/subject_train.txt
-        train/X_train.txt
-        train/y_train.txt
-        features.txt
+<!-- -->
 
-        temp <- tempfile()
-        download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",temp)
-        # get data files
-        xtest <- read.table(unz(temp,"UCI HAR Dataset/test/X_test.txt"))
-        xtrain <- read.table(unz(temp,"UCI HAR Dataset/train/X_train.txt"))
-        # get feature names
-        features <- read.table(unz(temp,"UCI HAR Dataset/features.txt"))
-        ytest <- read.table(unz(temp,"UCI HAR Dataset/test/y_test.txt"))
-        ytrain <- read.table(unz(temp,"UCI HAR Dataset/train/y_train.txt"))
-        subject_train <- read.table(unz(temp,"UCI HAR Dataset/train/subject_train.txt"))
-        subject_test <- read.table(unz(temp,"UCI HAR Dataset/test/subject_test.txt"))
-        activitylabels <- read.table(unz(temp,"UCI HAR Dataset/activity_labels.txt"))
-        unlink(temp)
+    the files used from the original zip file for this project are:
 
-2.  Merges the training and the test sets to create one data set.
+    test/subject_test.txt
+    test/X_test.txt
+    test/y_test.txt
+    train/subject_train.txt
+    train/X_train.txt
+    train/y_train.txt
+    features.txt
 
+    temp <- tempfile()
+    download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",temp)
+    # get data files
+    xtest <- read.table(unz(temp,"UCI HAR Dataset/test/X_test.txt"))
+    xtrain <- read.table(unz(temp,"UCI HAR Dataset/train/X_train.txt"))
+    # get feature names
+    features <- read.table(unz(temp,"UCI HAR Dataset/features.txt"))
+    ytest <- read.table(unz(temp,"UCI HAR Dataset/test/y_test.txt"))
+    ytrain <- read.table(unz(temp,"UCI HAR Dataset/train/y_train.txt"))
+    subject_train <- read.table(unz(temp,"UCI HAR Dataset/train/subject_train.txt"))
+    subject_test <- read.table(unz(temp,"UCI HAR Dataset/test/subject_test.txt"))
+    activitylabels <- read.table(unz(temp,"UCI HAR Dataset/activity_labels.txt"))
+    unlink(temp)
+
+1.  Merges the training and the test sets to create one data set.
+
+        # ###########
+        # Get the data - This script will get the zip file from the url, download it to the OS temp dir.
+        # The script reads each file needed directly from the zip file without expanding the zip.
+        # When the file unlinked the temp file is deleted
+        # This allow running the script without making any assumption of the data location
+        # ##########
         xtesttrain <- rbind(xtest,xtrain) # merge raw data sets
         colnames(xtesttrain) <- features[,2] # set col names of raw data
         # get activity labels
@@ -96,7 +112,7 @@ The r script (run\_analysis.R) implements the 5 steps given above.
         xtesttrain <- cbind(ytesttrain[,1],xtesttrain) # add label col to start of raw data 
         xsubjects <- rbind(subject_test,subject_train) # merge subjects
 
-3.  Extracts only the measurements on the mean and standard deviation
+2.  Extracts only the measurements on the mean and standard deviation
     for each measurement.
 
         xmeancols <- xtesttrain[,grepl("mean",names(xtesttrain))] # find col names with "mean"
@@ -106,7 +122,7 @@ The r script (run\_analysis.R) implements the 5 steps given above.
         xmeanstd <- cbind(ytesttrain[,1],xmeanstd) # add column of activity numbers
         xmeanstd <- cbind(xsubjects[,1],xmeanstd) # add column of test subject numbers
 
-4.  Uses descriptive activity names to name the activities in the data
+3.  Uses descriptive activity names to name the activities in the data
     set
 
         colnames(xmeanstd)[1] <- "Subject"
@@ -116,7 +132,7 @@ The r script (run\_analysis.R) implements the 5 steps given above.
         # set activity labels 
         xmeanstd <- within(xmeanstd, Activities <- levels(activitylabels)[Activities])
 
-5.  Appropriately labels the data set with descriptive variable names.
+4.  Appropriately labels the data set with descriptive variable names.
 
         #standardize names for tidy data set
         names(xmeanstd)<-gsub("^t", "time", names(xmeanstd))
@@ -132,7 +148,7 @@ The r script (run\_analysis.R) implements the 5 steps given above.
         names(xmeanstd)<-gsub("\\)", "", names(xmeanstd))
         xmeanstd <- within(xmeanstd, Activities <- levels(activitylabels)[Activities])
 
-6.  From the data set in step 4, creates a second, independent tidy data
+5.  From the data set in step 4, creates a second, independent tidy data
     set with the average of each variable for each activity and each
     subject.
 

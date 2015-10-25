@@ -5,6 +5,9 @@ date: "October 23, 2015"
 output: md_document
 ---
 
+#Intro
+This readme was created in rstudio as an *.rmd file with the heading yml ouput: set to md_document.  This allowed the use of editing and preview features of rstudio and to output *.md.
+
 #Instruction to run script
 
 This repo contains the r script and supporting files for the Getting and Cleaning Data project.  The r script to reproduce the output file (tidydata.txt) is run_analysis.R.  The r script will download the required zip file from the given url to the OS temp directory, load all the necessary files from the zip repo and then delete the zip file.  This makes the script entirely self contained.
@@ -37,8 +40,11 @@ The assignment includes an overview and specific steps.
 #Process
 The r script (run_analysis.R) implements the 5 steps given above.
 
-0. Get the data file and read the data - the files used from the original zip file for this project are:
+* Get the data file and read the data 
+
 ```
+the files used from the original zip file for this project are:
+
 test/subject_test.txt
 test/X_test.txt
 test/y_test.txt
